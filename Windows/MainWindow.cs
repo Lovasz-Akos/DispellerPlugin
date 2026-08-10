@@ -245,7 +245,15 @@ public class MainWindow : Window, IDisposable
         var hasMatchingModels = matchingModelCount > 1;
 
         // Try to get icon
-        var icon = GetIcon((ushort)item.IconId);
+        var icon = GetIcon((uint)item.IconId);
+        if (icon == null)
+        {
+            var luminaIconId = GetItemIconFromLumina(item.ItemId);
+            if (luminaIconId != 0 && luminaIconId != item.IconId)
+            {
+                icon = GetIcon(luminaIconId);
+            }
+        }
         if (icon != null)
         {
             ImGui.Image(icon.Handle, new Vector2(32, 32));
@@ -338,10 +346,19 @@ public class MainWindow : Window, IDisposable
         }
     }
 
-    private IDalamudTextureWrap? GetIcon(ushort id)
+    private IDalamudTextureWrap? GetIcon(uint id)
     {
-        var icon = Plugin.TextureProvider.GetFromGameIcon(new Dalamud.Interface.Textures.GameIconLookup(id)).GetWrapOrDefault();
-        return icon;
+        if (id == 0)
+            return null;
+
+        try
+        {
+            return Plugin.TextureProvider.GetFromGameIcon(new Dalamud.Interface.Textures.GameIconLookup(id)).GetWrapOrDefault();
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     private void DrawFooter()
@@ -418,19 +435,19 @@ public class MainWindow : Window, IDisposable
                 })
                 .ToList();
 
-            // First, identify items with shared models by grouping by slot + model
-            var itemsWithSharedModels = validItems
+            // Identify items with shared models OR items that can be stored in the Armoire
+            var itemsToDisplay = validItems
                 .GroupBy(item => {
                     var slotName = GetSlotName(item.ItemId);
                     var modelId = GetItemModel(item.ItemId);
                     return $"{slotName}-{modelId}";
                 })
-                .Where(g => g.Count() > 1) // Only groups with matching models
+                .Where(g => g.Count() > 1 || g.Any(item => CanGoInArmoire(item.ItemId))) // Include duplicate models OR Armoire items
                 .SelectMany(g => g) // Flatten back to individual items
                 .ToList();
 
             // Now group by slot category only
-            var grouped = itemsWithSharedModels
+            var grouped = itemsToDisplay
                 .GroupBy(item => GetSlotName(item.ItemId))
                 .Select(g => {
                     // Sort items within this slot by model ID so matching models are adjacent
@@ -441,11 +458,11 @@ public class MainWindow : Window, IDisposable
                             // Dresser name can be incorrect/outdated when dresser updates
                             var itemName = GetItemNameFromLumina(item.ItemId);
                             
-                            // Get icon - use from Lumina if dresser icon is invalid
-                            var iconId = item.IconId;
+                            // Get icon from Lumina for accuracy (handles HQ and NQ item IDs)
+                            var iconId = GetItemIconFromLumina(item.ItemId);
                             if (iconId == 0)
                             {
-                                iconId = GetItemIconFromLumina(item.ItemId);
+                                iconId = item.IconId;
                             }
                             
                             // Get dye count from Lumina
@@ -477,9 +494,18 @@ public class MainWindow : Window, IDisposable
                 .OrderBy(g => GetSlotOrder(g.SlotCategory)) // Sort slots in logical order
                 .ToList();
 
+            if (plugin.Configuration.ShowOnlyWeapons)
+            {
+                grouped = grouped.Where(g => g.SlotCategory == "Main Hand" || g.SlotCategory == "Off Hand").ToList();
+            }
+            else if (plugin.Configuration.ShowOnlyClothing)
+            {
+                grouped = grouped.Where(g => g.SlotCategory != "Main Hand" && g.SlotCategory != "Off Hand").ToList();
+            }
+
             sharedGroups = grouped;
             var totalItems = grouped.Sum(g => g.Items.Count);
-            statusMessage = $"Found {totalItems} items with shared models across {grouped.Count} slot categories!";
+            statusMessage = $"Found {totalItems} items (shared models & Armoire items) across {grouped.Count} slot categories!";
         }
         catch (Exception ex)
         {
@@ -493,10 +519,27 @@ public class MainWindow : Window, IDisposable
         }
     }
 
+    private Lazy<HashSet<uint>> armoireItemIds = new(() =>
+    {
+        var cabinetSheet = Plugin.DataManager.GetExcelSheet<Cabinet>();
+        if (cabinetSheet == null) return new HashSet<uint>();
+        return cabinetSheet
+            .Where(row => row.Item.RowId > 0)
+            .Select(row => row.Item.RowId)
+            .ToHashSet();
+    });
+
+    private static uint GetBaseItemId(uint itemId)
+    {
+        if (itemId == 0) return 0;
+        return itemId > 500000 ? itemId % 500000 : (itemId > 100000 ? itemId % 100000 : itemId);
+    }
+
     private string GetItemModel(uint itemId)
     {
+        var baseId = GetBaseItemId(itemId);
         var sheet = Plugin.DataManager.GetExcelSheet<Item>()!;
-        if (!sheet.TryGetRow(itemId, out var item))
+        if (!sheet.TryGetRow(baseId, out var item))
             return "Unknown";
 
         var model = ModelDetectionService.ExtractModelInfo(item.ModelMain);
@@ -505,11 +548,12 @@ public class MainWindow : Window, IDisposable
 
     private string GetSlotName(uint itemId)
     {
-        if (itemId == 0)
+        var baseId = GetBaseItemId(itemId);
+        if (baseId == 0)
             return "Unknown Slot";
             
         var sheet = Plugin.DataManager.GetExcelSheet<Item>()!;
-        if (!sheet.TryGetRow(itemId, out var item))
+        if (!sheet.TryGetRow(baseId, out var item))
             return "Unknown Slot";
 
         if (!item.EquipSlotCategory.IsValid)
@@ -535,11 +579,12 @@ public class MainWindow : Window, IDisposable
 
     private string GetItemNameFromLumina(uint itemId)
     {
-        if (itemId == 0)
+        var baseId = GetBaseItemId(itemId);
+        if (baseId == 0)
             return "Unknown Item";
             
         var sheet = Plugin.DataManager.GetExcelSheet<Item>()!;
-        if (!sheet.TryGetRow(itemId, out var item))
+        if (!sheet.TryGetRow(baseId, out var item))
             return "Unknown Item";
         
         return item.Name.ExtractText();
@@ -547,11 +592,12 @@ public class MainWindow : Window, IDisposable
 
     private uint GetItemIconFromLumina(uint itemId)
     {
-        if (itemId == 0)
+        var baseId = GetBaseItemId(itemId);
+        if (baseId == 0)
             return 0;
             
         var sheet = Plugin.DataManager.GetExcelSheet<Item>()!;
-        if (!sheet.TryGetRow(itemId, out var item))
+        if (!sheet.TryGetRow(baseId, out var item))
             return 0;
         
         return item.Icon;
@@ -559,11 +605,12 @@ public class MainWindow : Window, IDisposable
 
     private byte GetItemDyeCount(uint itemId)
     {
-        if (itemId == 0)
+        var baseId = GetBaseItemId(itemId);
+        if (baseId == 0)
             return 0;
             
         var sheet = Plugin.DataManager.GetExcelSheet<Item>()!;
-        if (!sheet.TryGetRow(itemId, out var item))
+        if (!sheet.TryGetRow(baseId, out var item))
             return 0;
         
         return item.DyeCount;
@@ -571,12 +618,8 @@ public class MainWindow : Window, IDisposable
 
     private bool CanGoInArmoire(uint itemId)
     {
-        if (itemId == 0)
-            return false;
-            
-        // Check if item exists in the Cabinet sheet (Armoire items)
-        var cabinetSheet = Plugin.DataManager.GetExcelSheet<Cabinet>()!;
-        return cabinetSheet.Any(row => row.Item.RowId == itemId);
+        var baseId = GetBaseItemId(itemId);
+        return baseId != 0 && armoireItemIds.Value.Contains(baseId);
     }
 
     private int GetSlotOrder(string slotName)
