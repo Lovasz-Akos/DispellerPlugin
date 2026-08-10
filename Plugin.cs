@@ -24,7 +24,8 @@ public sealed class Plugin : IDalamudPlugin
     public DresserScanner DresserScanner { get; init; }
 
     public readonly WindowSystem WindowSystem = new("Dispeller");
-    private MainWindow MainWindow { get; init; }
+    public MainWindow MainWindow { get; init; }
+    public ConfigWindow ConfigWindow { get; init; }
 
     public Plugin()
     {
@@ -33,8 +34,10 @@ public sealed class Plugin : IDalamudPlugin
         DresserScanner = new DresserScanner();
 
         MainWindow = new MainWindow(this);
+        ConfigWindow = new ConfigWindow(this);
 
         WindowSystem.AddWindow(MainWindow);
+        WindowSystem.AddWindow(ConfigWindow);
 
         CommandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
         {
@@ -43,6 +46,7 @@ public sealed class Plugin : IDalamudPlugin
 
         PluginInterface.UiBuilder.Draw += WindowSystem.Draw;
         PluginInterface.UiBuilder.OpenMainUi += ToggleMainUi;
+        PluginInterface.UiBuilder.OpenConfigUi += ToggleConfigUi;
 
         Log.Information($"===Dispeller plugin loaded! Ready to find shared models!===");
     }
@@ -51,10 +55,12 @@ public sealed class Plugin : IDalamudPlugin
     {
         PluginInterface.UiBuilder.Draw -= WindowSystem.Draw;
         PluginInterface.UiBuilder.OpenMainUi -= ToggleMainUi;
+        PluginInterface.UiBuilder.OpenConfigUi -= ToggleConfigUi;
         
         WindowSystem.RemoveAllWindows();
 
         MainWindow.Dispose();
+        ConfigWindow.Dispose();
         DresserScanner.Dispose();
 
         CommandManager.RemoveHandler(CommandName);
@@ -66,4 +72,5 @@ public sealed class Plugin : IDalamudPlugin
     }
     
     public void ToggleMainUi() => MainWindow.Toggle();
+    public void ToggleConfigUi() => ConfigWindow.Toggle();
 }
