@@ -344,6 +344,28 @@ public class MainWindow : Window, IDisposable
                 ImGui.EndTooltip();
             }
         }
+
+        // Draw Copy Name button
+        ImGui.SameLine();
+        ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 10);
+        
+        ImGui.PushStyleColor(ImGuiCol.Button, HeaderEdge);
+        ImGui.PushStyleColor(ImGuiCol.ButtonHovered, SoftMagenta);
+        ImGui.PushStyleColor(ImGuiCol.ButtonActive, DarkerPurple);
+        ImGui.PushStyleColor(ImGuiCol.Text, BrightWhite);
+
+        if (ImGui.Button($"Copy Name##{item.ItemId}_{item.Slot}", new Vector2(80, 22)))
+        {
+            ImGui.SetClipboardText(displayName);
+            statusMessage = $"Copied '{displayName}' to clipboard!";
+        }
+
+        ImGui.PopStyleColor(4);
+
+        if (ImGui.IsItemHovered())
+        {
+            ImGui.SetTooltip($"Copy '{displayName}' to clipboard so you can paste it into the search bar!");
+        }
     }
 
     private IDalamudTextureWrap? GetIcon(uint id)
