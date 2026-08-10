@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
-using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 using Dalamud.Interface.Textures.TextureWraps;
@@ -109,8 +108,11 @@ public class MainWindow : Window, IDisposable
 
     private void DrawScanButton()
     {
-        var buttonWidth = ImGui.GetContentRegionAvail().X * 0.5f;
-        var centerPos = (ImGui.GetContentRegionAvail().X - buttonWidth) / 2;
+        var contentWidth = ImGui.GetContentRegionAvail().X;
+        var buttonWidth = contentWidth * 0.5f;
+        var centerPos = (contentWidth - buttonWidth - 90) / 2;
+        if (centerPos < 0) centerPos = 0;
+        
         ImGui.SetCursorPosX(centerPos);
 
         if (isScanning)
@@ -141,6 +143,25 @@ public class MainWindow : Window, IDisposable
             
             ImGui.PopStyleColor(4);
         }
+
+        ImGui.SameLine();
+        ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 5);
+
+        ImGui.PushStyleColor(ImGuiCol.Button, HeaderEdge);
+        ImGui.PushStyleColor(ImGuiCol.ButtonHovered, SoftMagenta);
+        ImGui.PushStyleColor(ImGuiCol.ButtonActive, DarkerPurple);
+        ImGui.PushStyleColor(ImGuiCol.Text, BrightWhite);
+
+        if (ImGui.Button("Settings", new Vector2(80, 40)))
+        {
+            plugin.ToggleConfigUi();
+        }
+        if (ImGui.IsItemHovered())
+        {
+            ImGui.SetTooltip("Open Dispeller Settings");
+        }
+
+        ImGui.PopStyleColor(4);
     }
 
     private void DrawStatus()
