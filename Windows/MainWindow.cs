@@ -11,6 +11,7 @@ using Lumina.Excel.Sheets;
 using Dispeller.Services;
 
 // yea i used emojis bc i wanted to be cute and funny so what 
+// Naara: sorry, feel free to revert, but I removed emoji because they don't render ingame at all :( 
 
 namespace Dispeller.Windows;
 
@@ -92,10 +93,10 @@ public class MainWindow : Window, IDisposable
         ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 5);
         ImGui.SetCursorPosX(20);
 
-        // Title with emojis
+        // Title
         ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1.0f, 1.0f, 1.0f, 1.0f));
         ImGui.SetWindowFontScale(1.2f);
-        ImGui.TextUnformatted("✨ Dispeller ✨");
+        ImGui.TextUnformatted("Dispeller");
         ImGui.SetWindowFontScale(1.0f);
         ImGui.PopStyleColor();
 
@@ -133,7 +134,7 @@ public class MainWindow : Window, IDisposable
             ImGui.PushStyleColor(ImGuiCol.ButtonActive, DarkerPurple);
             ImGui.PushStyleColor(ImGuiCol.Text, BrightWhite);
             
-            if (ImGui.Button("💖 Scan Glamour Dresser 💖", new Vector2(buttonWidth, 40)))
+            if (ImGui.Button("Scan Glamour Dresser", new Vector2(buttonWidth, 40)))
             {
                 ScanDresser();
             }
