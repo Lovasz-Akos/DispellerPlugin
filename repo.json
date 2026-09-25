@@ -2,11 +2,11 @@
   {
     "Author": "Naara",
     "Name": "Dispeller Revived",
-    "InternalName": "DispellerRevived",
+    "InternalName": "Dispeller",
     "AssemblyVersion": "1.3.0.0",
-    "Description": "A plugin to help you manage your Glamour Dresser by identifying items that share the same visual models or can be stored in the armoire",
-    "Punchline": "Easily clean out your Glamour Dresser.",
+    "Description": "A cute plugin to help you manage your Glamour Dresser by identifying items that share the same visual models.",
     "ApplicableVersion": "any",
+    "RepoUrl": "https://github.com/Lovasz-Akos/DispellerPlugin",
     "Tags": [
       "glamour",
       "dresser",
@@ -20,11 +20,12 @@
     "LoadSync": false,
     "CanUnloadAsync": false,
     "LoadPriority": 0,
-    "AcceptsFeedback": true,
-    "DownloadLinkInstall": "https://github.com/Lovasz-Akos/DispellerPlugin/releases/latest/download/Dispeller.zip",
-    "DownloadLinkTesting": "https://github.com/Lovasz-Akos/DispellerPlugin/releases/latest/download/Dispeller.zip",
-    "DownloadLinkUpdate": "https://github.com/Lovasz-Akos/DispellerPlugin/releases/latest/download/Dispeller.zip",
     "IconUrl": "https://raw.githubusercontent.com/Lovasz-Akos/DispellerPlugin/master/images/icon.png",
-    "LastUpdate": "1786427581"
+    "Punchline": "Easily clean out your Glamour Dresser.",
+    "AcceptsFeedback": false,
+    "DownloadLinkInstall": "https://github.com/Lovasz-Akos/DispellerPlugin/releases/latest/download/latest.zip",
+    "DownloadLinkUpdate": "https://github.com/Lovasz-Akos/DispellerPlugin/releases/latest/download/latest.zip",
+    "DownloadLinkTesting": "https://github.com/Lovasz-Akos/DispellerPlugin/releases/latest/download/latest.zip",
+    "LastUpdate": "1790369259"
   }
 ]
