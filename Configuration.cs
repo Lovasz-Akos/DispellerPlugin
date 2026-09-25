@@ -1,19 +1,17 @@
-using Dalamud.Configuration;
-using System;
-
-namespace Dispeller;
-
-[Serializable]
-public class Configuration : IPluginConfiguration
+namespace Dispeller
 {
-    public int Version { get; set; } = 0;
+    using System;
+    using Dalamud.Configuration;
 
-    public bool ShowOnlyWeapons { get; set; } = false;
-    public bool ShowOnlyClothing { get; set; } = false;
-
-    // Save configuration
-    public void Save()
+    [Serializable]
+    public class Configuration : IPluginConfiguration
     {
-        Plugin.PluginInterface.SavePluginConfig(this);
+        public int Version { get; set; } = 0;
+
+        public bool ShowOnlyWeapons { get; set; } = false;
+        public bool ShowOnlyClothing { get; set; } = false;
+
+        // Save configuration
+        public void Save() => Plugin.PluginInterface.SavePluginConfig(this);
     }
 }
