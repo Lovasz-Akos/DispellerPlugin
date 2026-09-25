@@ -29,6 +29,8 @@ public class DresserScanner : IDisposable
             if (!agent->IsAddonReady() || agent->Data == null)
                 return;
 
+            // Read the slot counter through the named field so it follows
+            // FFXIVClientStructs instead of an offset that breaks each game patch.
             var usedSlots = agent->Data->UsedSlots;
 
             // Always cache if cache is empty, or if the slot count has changed
