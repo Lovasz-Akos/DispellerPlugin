@@ -12,7 +12,7 @@ permissions:
 env:
   # Must match InternalName in the manifest; DalamudPackager names the
   # assembly, the manifest and the output folder after it.
-  INTERNAL_NAME: DispellerRevived
+  INTERNAL_NAME: Dispeller
 
   # The API level this plugin targets. Stated here rather than read from the
   # source manifest because DalamudPackager injects DalamudApiLevel at build
