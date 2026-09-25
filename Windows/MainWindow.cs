@@ -95,7 +95,7 @@ public class MainWindow : Window, IDisposable
         // Title
         ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1.0f, 1.0f, 1.0f, 1.0f));
         ImGui.SetWindowFontScale(1.2f);
-        ImGui.TextUnformatted("Dispeller");
+        ImGui.TextUnformatted("Dispeller Revived");
         ImGui.SetWindowFontScale(1.0f);
         ImGui.PopStyleColor();
 
@@ -158,7 +158,7 @@ public class MainWindow : Window, IDisposable
         }
         if (ImGui.IsItemHovered())
         {
-            ImGui.SetTooltip("Open Dispeller Settings");
+            ImGui.SetTooltip("Open Dispeller Revived Settings");
         }
 
         ImGui.PopStyleColor(4);

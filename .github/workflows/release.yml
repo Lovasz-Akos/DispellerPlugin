@@ -1,103 +1,128 @@
 name: Release
 
+# Tag a commit v1.4 (matching <Version> in Dispeller.csproj) and push the tag:
+#   git tag -a v1.4 -m "..." && git push origin v1.4
 on:
   push:
-    tags:
-      - 'v*'
-  workflow_dispatch:
+    tags: ['v*']
 
 permissions:
   contents: write
 
 env:
-  PLUGIN_NAME: Dispeller
-  DALAMUD_HOME: ${{ github.workspace }}/.dalamud
+  # Must match InternalName in the manifest; DalamudPackager names the
+  # assembly, the manifest and the output folder after it.
+  INTERNAL_NAME: DispellerRevived
+
+  # The API level this plugin targets. Stated here rather than read from the
+  # source manifest because DalamudPackager injects DalamudApiLevel at build
+  # time - it is in the built manifest, which is too late to check what to
+  # build against. Both guards below compare against this.
+  DALAMUD_API_LEVEL: '15'
 
 jobs:
   release:
-    runs-on: windows-latest
-
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: master
           fetch-depth: 0
 
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: '10.0.x'
 
-      - name: Download Dalamud
-        shell: pwsh
+      # Dalamud is not on the runner. Dalamud.NET.Sdk only auto-resolves an
+      # XIVLauncher install, so point DALAMUD_HOME at the published distrib.
+      #
+      # The stable channel, NOT the api15/ path. That path is frozen on a
+      # pre-release 14.0.5.2 build whose FFXIVClientStructs is a different
+      # vintage from the one players run, so code that builds against a current
+      # install failed here on a changed method signature. Stable is 15.0.3.1,
+      # which is what XIVLauncher installs.
+      - name: Fetch Dalamud
         run: |
-          New-Item -ItemType Directory -Force -Path "$env:DALAMUD_HOME" | Out-Null
-          Invoke-WebRequest -Uri https://goatcorp.github.io/dalamud-distrib/latest.zip -OutFile dalamud.zip
-          Expand-Archive -Path dalamud.zip -DestinationPath "$env:DALAMUD_HOME" -Force
+          curl -fsSL -o dalamud.zip https://goatcorp.github.io/dalamud-distrib/latest.zip
+          unzip -q dalamud.zip -d "$RUNNER_TEMP/dalamud"
+
+          # Assert the fetched build matches the API level the manifest targets.
+          # Without this the mismatch above surfaced as an unrelated-looking
+          # compile error rather than as "you built against the wrong Dalamud",
+          # and a future channel move would do the same again.
+          got=$(jq -r '.libraries | keys | map(select(startswith("Dalamud/"))) | .[0]' \
+            "$RUNNER_TEMP/dalamud/Dalamud.deps.json" | cut -d/ -f2)
+          echo "Fetched Dalamud $got; this plugin targets API level $DALAMUD_API_LEVEL."
+          if [ "${got%%.*}" != "$DALAMUD_API_LEVEL" ]; then
+            echo "That is the wrong API level. Update DALAMUD_API_LEVEL, or the distrib channel above."
+            exit 1
+          fi
 
       - name: Build
-        run: dotnet build -c Release --nologo
+        run: DALAMUD_HOME="$RUNNER_TEMP/dalamud" dotnet build -c Release
 
-      - name: Resolve version
-        id: ver
-        shell: pwsh
+      # net10.0-windows cross-compiles on Linux, so the artifact built here is
+      # the same one a Windows build produces.
+
+      - name: Check the tag matches the built version
         run: |
-          $tag = if ($env:GITHUB_REF -like 'refs/tags/*') {
-            $env:GITHUB_REF -replace '^refs/tags/', ''
-          } else {
-            (git describe --tags --abbrev=0)
-          }
+          tag="${GITHUB_REF_NAME#v}"
+          built=$(jq -r .AssemblyVersion "bin/Release/$INTERNAL_NAME.json")
+          # AssemblyVersion is always 4-part (1.4.0.0, 1.5.1.0) while the tag carries only
+          # the components written in the csproj (v1.4, v1.5.1). Pad both to four and
+          # compare. Stripping a literal ".0.0" suffix only worked for two-part versions:
+          # 1.5.1.0 does not end in ".0.0", so a three-part release could never be tagged.
+          pad() { IFS=. read -r a b c d <<< "$1"; echo "${a:-0}.${b:-0}.${c:-0}.${d:-0}"; }
+          if [ "$(pad "$tag")" != "$(pad "$built")" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match built version $built."
+            echo "Bump <Version> in Dispeller.csproj, or retag."
+            exit 1
+          fi
 
-          if ((git rev-list -n 1 $tag) -ne (git rev-parse HEAD)) {
-            throw "Tag '$tag' does not point at the current master HEAD. Tag the commit you want to release."
-          }
-
-          $manifest = Get-Content "bin/Release/$env:PLUGIN_NAME.json" -Raw | ConvertFrom-Json
-
-          if ([version]($tag -replace '^v', '') -ne [version]$manifest.AssemblyVersion) {
-            throw "Tag '$tag' does not match built AssemblyVersion '$($manifest.AssemblyVersion)'. Bump <Version> in $env:PLUGIN_NAME.csproj to match the tag."
-          }
-
-          "tag=$tag" >> $env:GITHUB_OUTPUT
-          "assembly_version=$($manifest.AssemblyVersion)" >> $env:GITHUB_OUTPUT
-          "api_level=$($manifest.DalamudApiLevel)" >> $env:GITHUB_OUTPUT
-
-      - name: Stage release artifact
-        shell: pwsh
-        run: Copy-Item "bin/Release/$env:PLUGIN_NAME/latest.zip" "$env:PLUGIN_NAME.zip"
-
-      - name: Update repo.json
-        shell: pwsh
-        env:
-          TAG: ${{ steps.ver.outputs.tag }}
-          ASSEMBLY_VERSION: ${{ steps.ver.outputs.assembly_version }}
-          API_LEVEL: ${{ steps.ver.outputs.api_level }}
-        run: |
-          $url = "https://github.com/${{ github.repository }}/releases/download/$env:TAG/$env:PLUGIN_NAME.zip"
-          $entry = (Get-Content repo.json -Raw | ConvertFrom-Json)[0]
-          $entry.AssemblyVersion     = $env:ASSEMBLY_VERSION
-          $entry.DalamudApiLevel     = [int]$env:API_LEVEL
-          $entry.DownloadLinkInstall = $url
-          $entry.DownloadLinkTesting = $url
-          $entry.DownloadLinkUpdate  = $url
-          $entry | ConvertTo-Json -Depth 10 -AsArray | Set-Content repo.json -Encoding utf8
-
-      - name: Commit repo.json
-        shell: pwsh
-        run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add repo.json
-          if (git diff --cached --name-only) {
-            git commit -m "chore: update repo.json for ${{ steps.ver.outputs.tag }}"
-            git push origin HEAD:master
-          } else {
-            Write-Host "repo.json already up to date."
-          }
+          # Closes the loop on the fetch check: that one verified what we built
+          # against, this one verifies what the packager then claimed to target.
+          # A disagreement means the SDK moved without the workflow noticing.
+          level=$(jq -r .DalamudApiLevel "bin/Release/$INTERNAL_NAME.json")
+          if [ "$level" != "$DALAMUD_API_LEVEL" ]; then
+            echo "Built manifest declares API level $level, expected $DALAMUD_API_LEVEL."
+            exit 1
+          fi
 
       - name: Publish release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ steps.ver.outputs.tag }}
-          name: ${{ steps.ver.outputs.tag }}
-          files: ${{ env.PLUGIN_NAME }}.zip
-          generate_release_notes: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            "bin/Release/$INTERNAL_NAME/latest.zip" \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes
+
+      # repo.json is what Dalamud reads when the URL is added as a custom
+      # plugin repository. The download links are version-independent
+      # (/releases/latest/download/), so only AssemblyVersion changes here -
+      # but Dalamud detects updates by comparing that field, so it has to be
+      # republished on the default branch for anyone to be offered the update.
+      - name: Update repo.json on ${{ github.event.repository.default_branch }}
+        run: |
+          branch="${{ github.event.repository.default_branch }}"
+          url="https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/latest.zip"
+          icon="https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${branch}/images/icon.png"
+
+          # LastUpdate is what the installer shows as "last updated". The docs'
+          # example gives it as a unix timestamp in a string. Taken from the
+          # tagged commit so it is deterministic rather than run-dependent.
+          jq --arg url "$url" --arg ts "$(git log -1 --format=%ct)" --arg icon "$icon" \
+            '[. + {DownloadLinkInstall: $url, DownloadLinkUpdate: $url, DownloadLinkTesting: $url, LastUpdate: $ts, IconUrl: $icon}]' \
+            "bin/Release/$INTERNAL_NAME.json" > "$RUNNER_TEMP/repo.json"
+
+          git fetch origin "$branch"
+          git checkout -B publish-repo-json "origin/$branch"
+          cp "$RUNNER_TEMP/repo.json" repo.json
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- repo.json; then
+            echo "repo.json already current, nothing to publish."
+            exit 0
+          fi
+          git commit -m "repo.json: $GITHUB_REF_NAME" -- repo.json
+          git push origin "publish-repo-json:$branch"
