@@ -340,7 +340,7 @@ namespace Dispeller.Windows
                 ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 5);
 
                 ImGui.PushStyleColor(ImGuiCol.Text, SoftMagenta);
-                ImGui.TextUnformatted("[Armoire]");
+                ImGui.TextUnformatted("[Armoire Eligible]");
                 ImGui.PopStyleColor();
 
                 if (ImGui.IsItemHovered())

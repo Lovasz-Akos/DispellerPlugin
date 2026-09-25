@@ -1,6 +1,6 @@
 name: Release
 
-# Tag a commit v1.4 (matching <Version> in Dispeller.csproj) and push the tag:
+# Tag a commit v1.4 (matching <Version> in DispellerRevived.csproj) and push the tag:
 #   git tag -a v1.4 -m "..." && git push origin v1.4
 on:
   push:
@@ -12,7 +12,7 @@ permissions:
 env:
   # Must match InternalName in the manifest; DalamudPackager names the
   # assembly, the manifest and the output folder after it.
-  INTERNAL_NAME: Dispeller
+  INTERNAL_NAME: DispellerRevived
 
   # The API level this plugin targets. Stated here rather than read from the
   # source manifest because DalamudPackager injects DalamudApiLevel at build
@@ -74,7 +74,7 @@ jobs:
           pad() { IFS=. read -r a b c d <<< "$1"; echo "${a:-0}.${b:-0}.${c:-0}.${d:-0}"; }
           if [ "$(pad "$tag")" != "$(pad "$built")" ]; then
             echo "Tag $GITHUB_REF_NAME does not match built version $built."
-            echo "Bump <Version> in Dispeller.csproj, or retag."
+            echo "Bump <Version> in DispellerRevived.csproj, or retag."
             exit 1
           fi
 

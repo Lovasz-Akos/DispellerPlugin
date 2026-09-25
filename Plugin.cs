@@ -23,7 +23,7 @@ namespace Dispeller
         public Configuration Configuration { get; init; }
         public DresserScanner DresserScanner { get; init; }
 
-        public readonly WindowSystem WindowSystem = new("Dispeller");
+        public readonly WindowSystem WindowSystem = new("DispellerRevived");
         public MainWindow MainWindow { get; init; }
         public ConfigWindow ConfigWindow { get; init; }
 
