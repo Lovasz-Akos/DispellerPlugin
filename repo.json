@@ -1,0 +1,31 @@
+[
+  {
+    "Author": "pupwife",
+    "Name": "Dispeller",
+    "InternalName": "Dispeller",
+    "AssemblyVersion": "1.2.0.0",
+    "TestingAssemblyVersion": null,
+    "Description": "A cute plugin to help you manage your Glamour Dresser by identifying items that share the same visual models.",
+    "Punchline": "Easily clean out your Glamour Dresser.",
+    "ApplicableVersion": "any",
+    "RepoUrl": "https://github.com/Lovasz-Akos/DispellerPlugin",
+    "IconUrl": "https://raw.githubusercontent.com/Lovasz-Akos/DispellerPlugin/master/images/icon.png",
+    "Tags": [
+      "glamour",
+      "dresser",
+      "models",
+      "fashion",
+      "cute",
+      "utility"
+    ],
+    "DalamudApiLevel": 15,
+    "LoadPriority": 0,
+    "IsHide": false,
+    "IsTestingExclusive": false,
+    "AcceptsFeedback": false,
+    "DownloadCount": 0,
+    "DownloadLinkInstall": "https://github.com/Lovasz-Akos/DispellerPlugin/releases/download/v1.2.0.0/Dispeller.zip",
+    "DownloadLinkTesting": "https://github.com/Lovasz-Akos/DispellerPlugin/releases/download/v1.2.0.0/Dispeller.zip",
+    "DownloadLinkUpdate": "https://github.com/Lovasz-Akos/DispellerPlugin/releases/download/v1.2.0.0/Dispeller.zip"
+  }
+]
