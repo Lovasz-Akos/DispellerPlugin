@@ -36,6 +36,6 @@ using them may get your account banned. Use at your own risk.
 ## Credits
 
 Fork of [pupwife/DispellerPlugin](https://github.com/pupwife/DispellerPlugin).
-Color variant setting inspired by [Dryness's fork](https://github.com/Dryness/DispellerPlugin)
+Color variant setting inspired by [Dryness's fork](https://github.com/Dryness/DispellerPlugin).
 Built on [Dalamud](https://github.com/goatcorp/Dalamud) and
 [FFXIVClientStructs](https://github.com/aers/FFXIVClientStructs).

@@ -2,7 +2,7 @@
   "Author": "Naara",
   "Name": "Dispeller Revived",
   "InternalName": "DispellerRevived",
-  "AssemblyVersion": "1.4.0.0",
+  "AssemblyVersion": "1.5.0.0",
   "Description": "A plugin to help you manage your Glamour Dresser by identifying items that share the same visual models or can be stored in the armoire.",
   "Punchline": "Easily clean out your Glamour Dresser.",
   "ApplicableVersion": "any",
