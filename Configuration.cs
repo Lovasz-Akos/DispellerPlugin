@@ -11,7 +11,8 @@ namespace Dispeller
         public bool ShowOnlyWeapons { get; set; } = false;
         public bool ShowOnlyClothing { get; set; } = false;
 
-        // Save configuration
+        public bool CountRecolorsAsDuplicates { get; set; } = true;
+
         public void Save() => Plugin.PluginInterface.SavePluginConfig(this);
     }
 }

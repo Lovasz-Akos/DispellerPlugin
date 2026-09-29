@@ -66,9 +66,34 @@ namespace Dispeller.Windows
                 ImGui.SetTooltip("Filter results to only display non-weapon armor and gear pieces.");
             }
 
+            ImGui.Spacing();
+            ImGui.Separator();
+            ImGui.Spacing();
+
+            ImGui.TextUnformatted("Matching");
+            ImGui.Separator();
+            ImGui.Spacing();
+
+            bool countRecolors = config.CountRecolorsAsDuplicates;
+            if (ImGui.Checkbox("Count recolors as duplicates", ref countRecolors))
+            {
+                config.CountRecolorsAsDuplicates = countRecolors;
+                changed = true;
+            }
+
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip(
+                    "An item's model is a mesh plus a color / material variant.\n" +
+                    "With this on, only the mesh has to match, so a recolor is flagged as a duplicate.\n" +
+                    "Turn it off to require the variant to match too, which finds far fewer duplicates.");
+            }
+
             if (changed)
             {
                 config.Save();
+
+                this.plugin.MainWindow.RefreshResults();
             }
         }
     }

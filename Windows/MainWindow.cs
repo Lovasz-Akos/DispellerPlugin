@@ -19,17 +19,15 @@ namespace Dispeller.Windows
         private bool isScanning = false;
         private string statusMessage = "Ready to scan!";
 
-        // Darker purple + soft magenta + text colors
-        private static readonly Vector4 DarkerPurple = new(0.28f, 0.20f, 0.45f, 1.00f);  // deep purple
-        private static readonly Vector4 SoftMagenta = new(0.78f, 0.37f, 0.64f, 1.00f);  // soft magenta
-        private static readonly Vector4 HeaderEdge = new(0.20f, 0.15f, 0.35f, 1.00f);  // even darker edge
-        private static readonly Vector4 BrightWhite = new(1.00f, 1.00f, 1.00f, 1.00f);  // white for most text
-        private static readonly Vector4 AshBlack = new(0.10f, 0.10f, 0.10f, 1.00f);  // ash black for dropdown header text only
+        private static readonly Vector4 DarkerPurple = new(0.28f, 0.20f, 0.45f, 1.00f);
+        private static readonly Vector4 SoftMagenta = new(0.78f, 0.37f, 0.64f, 1.00f);
+        private static readonly Vector4 HeaderEdge = new(0.20f, 0.15f, 0.35f, 1.00f);
+        private static readonly Vector4 BrightWhite = new(1.00f, 1.00f, 1.00f, 1.00f);
+        private static readonly Vector4 AshBlack = new(0.10f, 0.10f, 0.10f, 1.00f);
 
-        // Light variants for UI elements
-        private static readonly Vector4 LightMagenta = new(0.88f, 0.47f, 0.74f, 1.00f);  // lighter magenta (pink) for main gear
-        private static readonly Vector4 LightPurple = new(0.65f, 0.60f, 0.80f, 1.00f);  // pastel purple for accessories (lighter, softer)
-        private static readonly Vector4 LightMintGreen = new(0.50f, 0.85f, 0.75f, 1.00f);  // minty green for weapons
+        private static readonly Vector4 LightMagenta = new(0.88f, 0.47f, 0.74f, 1.00f);
+        private static readonly Vector4 LightPurple = new(0.65f, 0.60f, 0.80f, 1.00f);
+        private static readonly Vector4 LightMintGreen = new(0.50f, 0.85f, 0.75f, 1.00f);
 
         public MainWindow(Plugin plugin)
             : base("Dispeller - Shared Model Analyzer", ImGuiWindowFlags.NoScrollbar)
@@ -47,27 +45,22 @@ namespace Dispeller.Windows
 
         public override void Draw()
         {
-            // Pink gradient header
             this.DrawHeader();
 
             ImGui.Spacing();
 
-            // Scan button
             this.DrawScanButton();
 
             ImGui.Spacing();
 
-            // Status message
             this.DrawStatus();
 
             ImGui.Spacing();
             ImGui.Separator();
             ImGui.Spacing();
 
-            // Results display
             this.DrawResults();
 
-            // Footer
             this.DrawFooter();
         }
 
@@ -77,7 +70,6 @@ namespace Dispeller.Windows
             ImDrawListPtr drawList = ImGui.GetWindowDrawList();
             Vector2 cursorPos = ImGui.GetCursorScreenPos();
 
-            // Dark purple/magenta gradient background
             drawList.AddRectFilledMultiColor(
                 cursorPos,
                 cursorPos + new Vector2(windowWidth, 60),
@@ -90,7 +82,6 @@ namespace Dispeller.Windows
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() + 5);
             ImGui.SetCursorPosX(20);
 
-            // Title
             ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1.0f, 1.0f, 1.0f, 1.0f));
             ImGui.SetWindowFontScale(1.2f);
             ImGui.TextUnformatted("Dispeller Revived");
@@ -123,10 +114,7 @@ namespace Dispeller.Windows
                 ImGui.PushStyleColor(ImGuiCol.ButtonActive, LightPurple);
                 ImGui.PushStyleColor(ImGuiCol.Text, BrightWhite);
 
-                if (ImGui.Button("Scanning...", new Vector2(buttonWidth, 40)))
-                {
-                    // Cancelled during scan
-                }
+                _ = ImGui.Button("Scanning...", new Vector2(buttonWidth, 40));
 
                 ImGui.PopStyleColor(4);
             }
@@ -208,7 +196,6 @@ namespace Dispeller.Windows
         {
             using ImRaii.IdDisposable id = ImRaii.PushId($"{group.SlotCategory}-{group.Items.Count}");
 
-            // Get color based on slot category
             Vector4 groupColor = this.GetColorForSlot(group.SlotCategory);
             ImGui.PushStyleColor(ImGuiCol.Header, groupColor);
             ImGui.PushStyleColor(ImGuiCol.HeaderHovered, groupColor);
@@ -224,7 +211,6 @@ namespace Dispeller.Windows
                 string? previousModelId = null;
                 foreach (SharedModelItem item in group.Items)
                 {
-                    // Visual separator if model changes (items with matching models will be adjacent)
                     if (previousModelId != null && previousModelId != item.ModelId)
                     {
                         ImGui.Spacing();
@@ -245,11 +231,9 @@ namespace Dispeller.Windows
         {
             ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 20);
 
-            // Check if this item has matching models (more than one item with same model ID)
             int matchingModelCount = allItemsInSlot.Count(i => i.ModelId == item.ModelId);
             bool hasMatchingModels = matchingModelCount > 1;
 
-            // Try to get icon
             IDalamudTextureWrap? icon = this.GetIcon((uint)item.IconId);
             if (icon == null)
             {
@@ -267,22 +251,18 @@ namespace Dispeller.Windows
             }
             else
             {
-                // Draw a placeholder if icon is missing
                 ImGui.Dummy(new Vector2(32, 32));
                 ImGui.SameLine();
             }
 
-            // Get display name - fallback if empty
             string displayName = string.IsNullOrWhiteSpace(item.Name) ? $"Item #{item.ItemId}" : item.Name;
 
-            // Add indicator for matching models
             if (hasMatchingModels)
             {
                 ImGui.PushStyleColor(ImGuiCol.Text, SoftMagenta);
                 ImGui.TextUnformatted($"🔗 {displayName}");
                 ImGui.PopStyleColor();
 
-                // Tooltip showing matching items
                 if (ImGui.IsItemHovered())
                 {
                     ImGui.BeginTooltip();
@@ -297,7 +277,6 @@ namespace Dispeller.Windows
                 ImGui.PopStyleColor();
             }
 
-            // Draw dye slot indicators (circles) - similar to Glamaholic
             if (item.DyeCount > 0)
             {
                 ImGui.SameLine();
@@ -307,18 +286,14 @@ namespace Dispeller.Windows
                 Vector2 basePos = ImGui.GetCursorScreenPos();
                 float circleRadius = 4.0f;
                 float circleSpacing = 8.0f;
-                // Use white/light gray for empty circles (visible on dark background)
                 uint circleColor = ImGui.ColorConvertFloat4ToU32(new Vector4(0.85f, 0.85f, 0.85f, 1.0f));
 
-                // Draw circles for each dye slot (1 or 2)
                 for (int i = 0; i < item.DyeCount; i++)
                 {
                     Vector2 circleCenter = basePos + new Vector2(circleRadius + 2, circleRadius + 2) + new Vector2(i * circleSpacing, 0);
-                    // Draw empty circle outline (similar to Glamaholic - empty circles indicate available dye slots)
                     drawList.AddCircle(circleCenter, circleRadius + 1, circleColor);
                 }
 
-                // Add spacing after circles and create invisible button for tooltip
                 float circlesWidth = (item.DyeCount * circleSpacing) + 4;
                 _ = ImGui.InvisibleButton($"dye_{item.ItemId}", new Vector2(circlesWidth, (circleRadius * 2) + 4));
 
@@ -329,11 +304,9 @@ namespace Dispeller.Windows
                     ImGui.EndTooltip();
                 }
 
-                // Move cursor past the circles
                 ImGui.SetCursorPosX(ImGui.GetCursorPosX() + circlesWidth);
             }
 
-            // Draw Armoire marker if item can be stored in Armoire
             if (item.CanGoInArmoire)
             {
                 ImGui.SameLine();
@@ -351,7 +324,6 @@ namespace Dispeller.Windows
                 }
             }
 
-            // Draw Copy Name button
             ImGui.SameLine();
             ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 10);
 
@@ -405,6 +377,14 @@ namespace Dispeller.Windows
             ImGui.PopStyleColor();
         }
 
+        public void RefreshResults()
+        {
+            if (this.sharedGroups != null)
+            {
+                this.ScanDresser();
+            }
+        }
+
         private void ScanDresser()
         {
             this.isScanning = true;
@@ -412,13 +392,11 @@ namespace Dispeller.Windows
 
             try
             {
-                // Check if we have cached data first (before trying to refresh)
                 int cachedCountBefore = DresserScanner.GetCachedItemCount();
                 bool hasCachedData = cachedCountBefore > 0;
 
                 Plugin.Log.Information($"ScanDresser: Starting scan - cached items before refresh: {cachedCountBefore}");
 
-                // Try to refresh the dresser data if it's currently open (to get latest data)
                 bool refreshed = false;
                 unsafe
                 {
@@ -452,13 +430,11 @@ namespace Dispeller.Windows
                     return;
                 }
 
-                // Deduplicate by Slot + ItemId to prevent duplicates from race conditions
                 List<PrismBoxItem> uniqueItems = dresserItems
                     .GroupBy(item => new { item.Slot, item.ItemId })
                     .Select(g => g.First())
                     .ToList();
 
-                // Filter out items with unknown slots
                 List<PrismBoxItem> validItems = uniqueItems
                     .Where(item =>
                     {
@@ -467,7 +443,6 @@ namespace Dispeller.Windows
                     })
                     .ToList();
 
-                // Identify items with shared models OR items that can be stored in the Armoire
                 List<PrismBoxItem> itemsToDisplay = validItems
                     .GroupBy(item =>
                     {
@@ -475,35 +450,28 @@ namespace Dispeller.Windows
                         string modelId = this.GetItemModel(item.ItemId);
                         return $"{slotName}-{modelId}";
                     })
-                    .Where(g => g.Count() > 1 || g.Any(item => this.CanGoInArmoire(item.ItemId))) // Include duplicate models OR Armoire items
-                    .SelectMany(g => g) // Flatten back to individual items
+                    .Where(g => g.Count() > 1 || g.Any(item => this.CanGoInArmoire(item.ItemId)))
+                    .SelectMany(g => g)
                     .ToList();
 
-                // Now group by slot category only
                 List<SharedModelGroup> grouped = itemsToDisplay
                     .GroupBy(item => this.GetSlotName(item.ItemId))
                     .Select(g =>
                     {
-                        // Sort items within this slot by model ID so matching models are adjacent
                         List<SharedModelItem> sortedItems = g
                             .OrderBy(item => this.GetItemModel(item.ItemId))
                             .Select(item =>
                             {
-                                // Always get item name from Lumina for accuracy
-                                // Dresser name can be incorrect/outdated when dresser updates
                                 string itemName = this.GetItemNameFromLumina(item.ItemId);
 
-                                // Get icon from Lumina for accuracy (handles HQ and NQ item IDs)
                                 uint iconId = this.GetItemIconFromLumina(item.ItemId);
                                 if (iconId == 0)
                                 {
                                     iconId = item.IconId;
                                 }
 
-                                // Get dye count from Lumina
                                 byte dyeCount = this.GetItemDyeCount(item.ItemId);
 
-                                // Check if item can be stored in Armoire
                                 bool canGoInArmoire = this.CanGoInArmoire(item.ItemId);
 
                                 return new SharedModelItem
@@ -521,12 +489,12 @@ namespace Dispeller.Windows
 
                         return new SharedModelGroup
                         {
-                            ModelId = "", // Not used for slot-based grouping
+                            ModelId = "",
                             SlotCategory = g.Key,
                             Items = sortedItems
                         };
                     })
-                    .OrderBy(g => this.GetSlotOrder(g.SlotCategory)) // Sort slots in logical order
+                    .OrderBy(g => this.GetSlotOrder(g.SlotCategory))
                     .ToList();
 
                 if (this.plugin.Configuration.ShowOnlyWeapons)
@@ -568,15 +536,7 @@ namespace Dispeller.Windows
                 .ToHashSet();
         });
 
-        private static uint GetBaseItemId(uint itemId)
-        {
-            if (itemId == 0)
-            {
-                return 0;
-            }
-
-            return itemId > 500000 ? itemId % 500000 : (itemId > 100000 ? itemId % 100000 : itemId);
-        }
+        private static uint GetBaseItemId(uint itemId) => itemId >= 1_000_000 ? itemId - 1_000_000 : itemId;
 
         private string GetItemModel(uint itemId)
         {
@@ -587,7 +547,9 @@ namespace Dispeller.Windows
                 return "Unknown";
             }
 
-            (ushort, ushort, ushort, ushort) model = ModelDetectionService.ExtractModelInfo(item.ModelMain);
+            (ushort, ushort, ushort, ushort) model = ModelDetectionService.ExtractModelInfo(
+                item.ModelMain,
+                this.plugin.Configuration.CountRecolorsAsDuplicates);
             return ModelDetectionService.GetModelIdString(model);
         }
 
@@ -612,7 +574,6 @@ namespace Dispeller.Windows
 
             EquipSlotCategory category = item.EquipSlotCategory.Value;
 
-            // Check each slot category in priority order
             if (category.MainHand > 0)
             {
                 return "Main Hand";
@@ -730,7 +691,6 @@ namespace Dispeller.Windows
 
         private int GetSlotOrder(string slotName)
         {
-            // Return order value for slot sorting (lower = appears first)
             return slotName switch
             {
                 "Main Hand" => 1,
@@ -750,25 +710,21 @@ namespace Dispeller.Windows
 
         private Vector4 GetColorForSlot(string slotName)
         {
-            // Accessories - purple
             if (slotName is "Ears" or "Neck" or "Wrists" or "Ring")
             {
                 return LightPurple;
             }
 
-            // Main gear - pink/magenta
             if (slotName is "Head" or "Body" or "Gloves" or "Legs" or "Feet")
             {
                 return LightMagenta;
             }
 
-            // Weapons - minty green
             if (slotName is "Main Hand" or "Off Hand")
             {
                 return LightMintGreen;
             }
 
-            // Default to purple if unknown
             return LightPurple;
         }
     }

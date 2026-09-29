@@ -5,43 +5,43 @@ namespace Dispeller.Services
 
     public class ModelDetectionService
     {
-        /// <summary>
-        /// Extract model information from Item.ModelMain
-        /// Based on Glamaholic's AlternativeFinder.ModelInfo
-        /// </summary>
-        public static (ushort, ushort, ushort, ushort) ExtractModelInfo(ulong raw)
+        public static (ushort, ushort, ushort, ushort) ExtractModelInfo(ulong raw, bool ignoreVariant)
         {
             ushort primaryKey = (ushort)(raw & 0xFFFF);
             ushort secondaryKey = (ushort)((raw >> 16) & 0xFFFF);
-            ushort variant = (ushort)((raw >> 32) & 0xFFFF);
-            ushort dye = (ushort)((raw >> 48) & 0xFFFF);
+            ushort weaponVariant = (ushort)((raw >> 32) & 0xFFFF);
 
-            if (variant != 0)
+            bool isWeapon = weaponVariant != 0;
+
+            if (ignoreVariant)
             {
-                // weapon
-                return (primaryKey, secondaryKey, variant, dye);
+                if (isWeapon)
+                {
+                    return (primaryKey, secondaryKey, 0, 0);
+                }
+
+                return (primaryKey, 0, 0, 0);
             }
 
-            return (primaryKey, 0, 0, 0);
+            if (isWeapon)
+            {
+                return (primaryKey, secondaryKey, weaponVariant, 0);
+            }
+
+            return (primaryKey, secondaryKey, 0, 0);
         }
 
-        /// <summary>
-        /// Check if two items share the same model
-        /// </summary>
-        public static bool ShareModel(Item item1, Item item2)
+        public static bool ShareModel(Item item1, Item item2, bool ignoreVariant)
         {
-            (ushort, ushort, ushort, ushort) model1 = ExtractModelInfo(item1.ModelMain);
-            (ushort, ushort, ushort, ushort) model2 = ExtractModelInfo(item2.ModelMain);
+            (ushort, ushort, ushort, ushort) model1 = ExtractModelInfo(item1.ModelMain, ignoreVariant);
+            (ushort, ushort, ushort, ushort) model2 = ExtractModelInfo(item2.ModelMain, ignoreVariant);
 
             return model1 == model2;
         }
 
-        /// <summary>
-        /// Get all items that share a model with the given item
-        /// </summary>
-        public static List<Item> FindSharedModelItems(Item targetItem)
+        public static List<Item> FindSharedModelItems(Item targetItem, bool ignoreVariant)
         {
-            (ushort, ushort, ushort, ushort) targetModel = ExtractModelInfo(targetItem.ModelMain);
+            (ushort, ushort, ushort, ushort) targetModel = ExtractModelInfo(targetItem.ModelMain, ignoreVariant);
             List<Item> sharedItems = new List<Item>();
 
             foreach (Item item in Plugin.DataManager.GetExcelSheet<Item>()!)
@@ -51,7 +51,7 @@ namespace Dispeller.Services
                     continue;
                 }
 
-                if (ExtractModelInfo(item.ModelMain) == targetModel)
+                if (ExtractModelInfo(item.ModelMain, ignoreVariant) == targetModel)
                 {
                     sharedItems.Add(item);
                 }
@@ -60,9 +60,6 @@ namespace Dispeller.Services
             return sharedItems;
         }
 
-        /// <summary>
-        /// Get model ID string for display
-        /// </summary>
         public static string GetModelIdString((ushort, ushort, ushort, ushort) model) => $"{model.Item1}-{model.Item2}-{model.Item3}-{model.Item4}";
     }
 }

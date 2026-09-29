@@ -1,5 +1,6 @@
 namespace Dispeller
 {
+    using System;
     using Dalamud.Game.Command;
     using Dalamud.Interface.Windowing;
     using Dalamud.IoC;
@@ -14,6 +15,7 @@ namespace Dispeller
         [PluginService] internal static ITextureProvider TextureProvider { get; private set; } = null!;
         [PluginService] internal static ICommandManager CommandManager { get; private set; } = null!;
         [PluginService] internal static IClientState ClientState { get; private set; } = null!;
+        [PluginService] internal static IPlayerState PlayerState { get; private set; } = null!;
         [PluginService] internal static IDataManager DataManager { get; private set; } = null!;
         [PluginService] internal static IFramework Framework { get; private set; } = null!;
         [PluginService] internal static IPluginLog Log { get; private set; } = null!;
@@ -31,6 +33,8 @@ namespace Dispeller
         {
             this.Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
 
+            SheetWarmup.Start();
+
             this.DresserScanner = new DresserScanner();
 
             this.MainWindow = new MainWindow(this);
@@ -41,7 +45,7 @@ namespace Dispeller
 
             _ = CommandManager.AddHandler(CommandName, new CommandInfo(this.OnCommand)
             {
-                HelpMessage = "Open Dispeller - Find shared models in your glamour dresser!"
+                HelpMessage = "Open Dispeller - Find shared models in your glamour dresser! Use \"/dispeller config\" for settings."
             });
 
             PluginInterface.UiBuilder.Draw += this.WindowSystem.Draw;
@@ -53,6 +57,8 @@ namespace Dispeller
 
         public void Dispose()
         {
+            SheetWarmup.Stop();
+
             PluginInterface.UiBuilder.Draw -= this.WindowSystem.Draw;
             PluginInterface.UiBuilder.OpenMainUi -= this.ToggleMainUi;
             PluginInterface.UiBuilder.OpenConfigUi -= this.ToggleConfigUi;
@@ -66,7 +72,19 @@ namespace Dispeller
             _ = CommandManager.RemoveHandler(CommandName);
         }
 
-        private void OnCommand(string command, string args) => this.MainWindow.Toggle();
+        private void OnCommand(string command, string args)
+        {
+            string argument = args.Trim();
+
+            if (argument.Equals("config", StringComparison.OrdinalIgnoreCase)
+                || argument.Equals("settings", StringComparison.OrdinalIgnoreCase))
+            {
+                this.ToggleConfigUi();
+                return;
+            }
+
+            this.MainWindow.Toggle();
+        }
 
         public void ToggleMainUi() => this.MainWindow.Toggle();
         public void ToggleConfigUi() => this.ConfigWindow.Toggle();
