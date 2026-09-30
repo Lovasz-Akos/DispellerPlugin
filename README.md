@@ -8,6 +8,10 @@
 
 ## Install
 
+\o/ Officially included in Dalamud! Just search for `Dispeller` and there it is!
+
+Alternatively,
+
 Add this URL in Dalamud under **Settings → Experimental → Custom Plugin Repositories**:
 
 ```
