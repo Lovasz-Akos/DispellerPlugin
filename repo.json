@@ -3,7 +3,7 @@
     "Author": "Lovasz-Akos",
     "Name": "Dispeller",
     "InternalName": "Dispeller",
-    "AssemblyVersion": "1.5.0.0",
+    "AssemblyVersion": "1.5.2.0",
     "Description": "A plugin to help you manage your Glamour Dresser by identifying items that share the same visual models or can be stored in the armoire.",
     "ApplicableVersion": "any",
     "RepoUrl": "https://github.com/Lovasz-Akos/DispellerPlugin",
