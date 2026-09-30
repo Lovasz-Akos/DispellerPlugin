@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="images/icon.png" alt="Dispeller Revived" width="128">
+  <img src="images/icon.png" alt="Dispeller" width="128">
 </p>
 
-<h1 align="center">Dispeller Revived</h1>
+<h1 align="center">Dispeller</h1>
 
 <p align="center">A Dalamud plugin that finds items in your Glamour Dresser that share the same model, so you can clear out the duplicates.</p>
 
@@ -14,7 +14,7 @@ Add this URL in Dalamud under **Settings → Experimental → Custom Plugin Repo
 https://raw.githubusercontent.com/Lovasz-Akos/DispellerPlugin/master/repo.json
 ```
 
-Then install **Dispeller Revived** from the plugin installer.
+Then install **Dispeller** from the plugin installer.
 
 ## Use
 

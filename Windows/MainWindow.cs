@@ -84,7 +84,7 @@ namespace Dispeller.Windows
 
             ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1.0f, 1.0f, 1.0f, 1.0f));
             ImGui.SetWindowFontScale(1.2f);
-            ImGui.TextUnformatted("Dispeller Revived");
+            ImGui.TextUnformatted("Dispeller");
             ImGui.SetWindowFontScale(1.0f);
             ImGui.PopStyleColor();
 
@@ -148,7 +148,7 @@ namespace Dispeller.Windows
 
             if (ImGui.IsItemHovered())
             {
-                ImGui.SetTooltip("Open Dispeller Revived Settings");
+                ImGui.SetTooltip("Open Dispeller Settings");
             }
 
             ImGui.PopStyleColor(4);
