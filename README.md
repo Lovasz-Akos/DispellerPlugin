@@ -25,12 +25,12 @@ Then install **Dispeller** from the plugin installer.
 `/dispeller` opens the window, `/dispeller config` opens the settings.
 
 Open your Glamour Dresser at least once, then hit **Scan**. Items are grouped by
-equipment slot, with matching models next to each other, and anything storable in
+equipment slot, with matching models next to each other, and anything storeable in
 the Armoire is flagged.
 
-Two items count as duplicates when their mesh matches — a recolour of a garment
-is still a redundant glamour. Turn off **Count recolors as duplicates** in the
-settings to require the colour variant to match too.
+Two items count as duplicates when their mesh matches. A recolor of an item
+is still considered a duplicate glamour, unless you turn off **Count recolors as duplicates** in the
+settings.
 
 ## Disclaimer
 
