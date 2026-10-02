@@ -4,7 +4,7 @@
 
 <h1 align="center">Dispeller</h1>
 
-<p align="center">A Dalamud plugin that finds items in your Glamour Dresser that share the same model, so you can clear out the duplicates.</p>
+<p align="center">A Dalamud plugin that finds items in your Glamour Dresser that share the same model, so you can clear out the duplicates, aswell as the items that can be moved to the Armoire! Happy space-saving 🤍 </p>
 
 ## Install
 
